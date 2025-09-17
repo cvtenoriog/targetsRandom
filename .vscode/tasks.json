@@ -54,16 +54,16 @@
 		],
 		"problemMatcher": [],
 		"dependsOn": "3 - Compile C++",
-		"group": "build"
+		"group": {
+			"kind": "build",
+			"isDefault": true
+		}
 	},
 	{
 		"label": "build",
 		"dependsOn": "4 - Copy DLL",
 		"problemMatcher": [],
-		"group": {
-			"kind": "build",
-			"isDefault": true
-		}
+		"group": "build"
 	}
 ]
 }
