@@ -8,6 +8,8 @@ import queue
 SCREEN_W, SCREEN_H = 1920, 1080
 UDP_IP = "127.0.0.1"
 UDP_PORT = 5005
+DWELL_TIME = 700   # ms de fijación
+GAME_TIME = 45     # segundos de duración
 
 # Cola para recibir datos de gaze_server
 gaze_queue = queue.Queue()
@@ -35,7 +37,9 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
 pygame.display.set_caption("Gaze Target Demo")
 clock = pygame.time.Clock()
-font = pygame.font.SysFont("Arial", 24)
+font = pygame.font.SysFont("Arial", 32)
+
+click_sound = pygame.mixer.Sound('assets/click.wav')
 
 # Variables de estímulo y mirada
 fix_target = None
@@ -45,12 +49,18 @@ fix_start = None
 # Botón SALIR
 button_rect = pygame.Rect(SCREEN_W-120, 20, 100, 50)
 button_color = (200,0,0)
-button_hover = False
 button_gaze_start = None
 
+# --- Tiempo de interacción ---
+start_time = pygame.time.get_ticks()
 running = True
+
 while running:
     screen.fill((255, 255, 255))
+
+    # --- Calcular tiempo restante ---
+    elapsed = (pygame.time.get_ticks() - start_time) // 1000
+    time_left = max(0, GAME_TIME - elapsed)
 
     # --- Dibuja estímulo ---
     if fix_target is None:
@@ -77,20 +87,19 @@ while running:
     # Dibuja punto de mirada
     pygame.draw.circle(screen, (255,0,0), (gx, gy), 8)
 
-    # --- Chequea dwell time estímulo 700ms ---
+    # --- Chequea dwell time estímulo ---
     if abs(gx - x) < 40 and abs(gy - y) < 40:
         if fix_start is None:
             fix_start = pygame.time.get_ticks()
-        elif pygame.time.get_ticks() - fix_start > 700:
+        elif pygame.time.get_ticks() - fix_start >= DWELL_TIME:
+            click_sound.play()
             fix_target = None
             fix_start = None
     else:
         fix_start = None
 
     # --- Dibuja botón SALIR ---
-    mouse_pos = pygame.mouse.get_pos()
-    button_hover = button_rect.collidepoint(mouse_pos)
-    pygame.draw.rect(screen, button_color if not button_hover else (255,0,0), button_rect)
+    pygame.draw.rect(screen, button_color, button_rect)
     text_surf = font.render("SALIR", True, (255,255,255))
     screen.blit(text_surf, (button_rect.x+10, button_rect.y+10))
 
@@ -98,10 +107,18 @@ while running:
     if button_rect.collidepoint(gx, gy):
         if button_gaze_start is None:
             button_gaze_start = pygame.time.get_ticks()
-        elif pygame.time.get_ticks() - button_gaze_start > 700:
+        elif pygame.time.get_ticks() - button_gaze_start >= DWELL_TIME:
             running = False
     else:
         button_gaze_start = None
+
+    # --- Mostrar tiempo restante ---
+    time_text = font.render(f"Tiempo: {time_left}", True, (0,0,0))
+    screen.blit(time_text, (20, 20))
+
+    # --- Terminar si se acaba el tiempo ---
+    if time_left <= 0:
+        running = False
 
     # Manejo de eventos
     for event in pygame.event.get():
