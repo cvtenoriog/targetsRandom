@@ -1,0 +1,52 @@
+Proyecto:
+tobbi/
+│ main.cpp
+├─ include/
+│   └─ tobii/
+│       ├─ tobii.h
+│       └─ tobii_advanced.h
+│       ├─ tobii_config.h
+│       └─ tobii_licensing.h
+│       ├─ tobii_stream.h
+│       └─ tobii_wearable.h
+├─ lib/
+│   └─ x86/
+│       ├─ tobii_stream_engine.dll
+│       └─ tobii_stream_engine.lib 
+│       ├─ tobii_stream_engine.def
+│       └─ tobii_stream_engine.lib.a 
+├─ build/
+└─ .vscode/
+    └─ tasks.json
+
+Para ejecutar el tasks.json: (en powershell de Windows caso en vscode no funcione)
+Pulsa Ctrl + Shift + P.
+Escribe “Tasks: Configure Default Build Task”.
+Te mostrará todas las tareas de tu tasks.json.
+Selecciona la que se llama build.
+Ctrl + Shift + B correrá tu pipeline entero
+
+Para ejecutar el gaze.cpp:
+$ g++.exe gaze.cpp -o build/gaze.exe -Iinclude -Llib/x86 -ltobii_stream_engine
+$ cd build
+  .\gaze.exe
+
+Para ejecutar el gaze_server.cpp
+>g++ src\gaze_server.cpp -o build\gaze_server.exe -Iinclude -Llib/x86 -ltobii_stream_engine -lws2_32
+> cd build
+  .\gaze_server.exe
+
+Pre-requisitos
+$env:PATH = "C:\mingw\bin;" + $env:PATH
+
+Extras:
+en el powershell de Windows y en la raíz del proyecto:
+>C:/mingw/bin/pexports.exe lib/x86/tobii_stream_engine.dll | Out-File -Encoding ASCII lib/x86/tobii_stream_engine.def
+>C:/mingw/bin/dlltool.exe -D tobii_stream_engine.dll -d lib/x86/tobii_stream_engine.def -l lib/x86/libtobii_stream_engine.dll.a
+>C:/mingw/bin/g++.exe main.cpp -o build/gaze.exe -Iinclude -Llib/x86 -ltobii_stream_engine
+>$env:PATH = "C:\mingw\bin;" + $env:PATH
+>g++.exe main.cpp -o build/gaze.exe -Iinclude -Llib/x86 -ltobii_stream_engine
+>g++.exe src/main.cpp -o build/gaze.exe -Iinclude -Llib/x86 -ltobii_stream_engine
+>.\build\gaze.exe
+
+

@@ -1,0 +1,69 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+	{
+		"label": "1 - Generate DEF",
+		"type": "shell",
+		"command": "powershell",
+		"args": [
+			"-Command",
+			"C:/mingw/bin/pexports.exe lib/x86/tobii_stream_engine.dll | Out-File -Encoding ASCII lib/x86/tobii_stream_engine.def"
+		],
+		"problemMatcher": []
+	},
+	{
+		"label": "2 - Generate DLL.A",
+		"type": "shell",
+		"command": "C:/mingw/bin/dlltool.exe",
+		"args": [
+			"-D",
+			"tobii_stream_engine.dll",
+			"-d",
+			"lib/x86/tobii_stream_engine.def",
+			"-l",
+			"lib/x86/libtobii_stream_engine.dll.a"
+		],
+		"problemMatcher": [],
+		"dependsOn": "1 - Generate DEF"
+	},
+	{
+		"label": "3 - Compile C++",
+		"type": "shell",
+		"command": "C:/mingw/bin/g++.exe",
+		"args": [
+			"main.cpp",
+			"-o",
+			"build/gaze.exe",
+			"-Iinclude",
+			"-Llib/x86",
+			"-ltobii_stream_engine"
+		],
+		"options": {
+			"cwd": "${workspaceFolder}"
+		},
+		"problemMatcher": [],
+		"dependsOn": "2 - Generate DLL.A"
+	},
+	{
+		"label": "4 - Copy DLL",
+		"type": "shell",
+		"command": "copy",
+		"args": [
+			"lib\\x86\\tobii_stream_engine.dll",
+			"build\\"
+		],
+		"problemMatcher": [],
+		"dependsOn": "3 - Compile C++",
+		"group": "build"
+	},
+	{
+		"label": "build",
+		"dependsOn": "4 - Copy DLL",
+		"problemMatcher": [],
+		"group": {
+			"kind": "build",
+			"isDefault": true
+		}
+	}
+]
+}
